@@ -184,6 +184,7 @@ export default function ExpenseTracker() {
   const [view, setView]           = useState("login");
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
+  const [fullName, setFullName]   = useState("");
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [session, setSession]     = useState(null);
@@ -238,7 +239,7 @@ export default function ExpenseTracker() {
     try {
       const { error } = view === "login"
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
+        : await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName.trim() } } });
       if (error) setAuthError(error.message);
       // on success onAuthStateChange fires → session updates → useEffect loads data
     } catch {
@@ -312,6 +313,15 @@ export default function ExpenseTracker() {
           <div style={s.authSub}>{view === "login" ? "Sign in to your expense vault" : "Start tracking your finances"}</div>
           {authError && <div style={s.errorBox}>{authError}</div>}
           <form onSubmit={handleAuth}>
+            {view === "signup" && (
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={s.label}>Full Name</label>
+                <input style={s.input} type="text" placeholder="Nitish Kumar"
+                  value={fullName} onChange={e => setFullName(e.target.value)} required
+                  onFocus={e => e.target.style.borderColor = "#C9A84C"}
+                  onBlur={e => e.target.style.borderColor = "#2a2a45"} />
+              </div>
+            )}
             <div style={{ marginBottom: "1rem" }}>
               <label style={s.label}>Email</label>
               <input style={s.input} type="email" placeholder="you@example.com"
@@ -333,7 +343,7 @@ export default function ExpenseTracker() {
           </form>
           <div style={s.switchLink}>
             {view === "login" ? "New to Vault? " : "Already have an account? "}
-            <button style={s.switchBtn} onClick={() => { setView(view === "login" ? "signup" : "login"); setAuthError(""); }}>
+            <button style={s.switchBtn} onClick={() => { setView(view === "login" ? "signup" : "login"); setAuthError(""); setFullName(""); }}>
               {view === "login" ? "Create account" : "Sign in"}
             </button>
           </div>
@@ -357,7 +367,7 @@ export default function ExpenseTracker() {
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <span style={{ fontSize: "13px", color: "#4a4a6a" }}>{session.user.email}</span>
+            <span style={{ fontSize: "13px", color: "#4a4a6a" }}>{session.user.user_metadata?.full_name || session.user.email}</span>
             <button style={s.signOutBtn} onClick={handleSignOut}
               onMouseEnter={e => { e.currentTarget.style.borderColor = "#C9A84C"; e.currentTarget.style.color = "#C9A84C"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "#2a2a45"; e.currentTarget.style.color = "#6a6a8a"; }}>
