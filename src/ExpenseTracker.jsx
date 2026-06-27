@@ -34,8 +34,7 @@ async function callClaude(messages, systemPrompt) {
 
 function extractText(data) {
   if (!data?.content) return "";
-  return data.content.filter((b) => b.type === "text").map((b) => b.text).join("
-");
+  return data.content.filter((b) => b.type === "text").map((b) => b.text).join("\n");
 }
 
 function extractJson(data) {
